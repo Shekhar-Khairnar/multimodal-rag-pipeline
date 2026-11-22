@@ -1,0 +1,20 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Generated at ingestion time (rebuildable from data/raw)
+data/extracted_assets/
+data/indexes/
+
+# Local scratch
+remove/
+notes/
+.ipynb_checkpoints/
+
+# Editor
+.vscode/

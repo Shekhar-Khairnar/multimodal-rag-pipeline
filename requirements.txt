@@ -1,0 +1,25 @@
+# LLM orchestration (OpenRouter is OpenAI-compatible, so we use langchain-openai)
+langchain
+langchain-core
+langchain-text-splitters
+langchain-openai
+langchain-huggingface
+langchain-pinecone
+
+# Vector store + embeddings
+pinecone
+sentence-transformers
+
+# Lexical search for hybrid retrieval (local BM25 + RRF)
+rank_bm25
+
+# PDF and image parsing
+pymupdf
+pillow
+pandas
+tabulate
+
+# App + config
+streamlit
+python-dotenv
+pydantic-settings
