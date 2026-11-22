@@ -8,6 +8,7 @@ from collections import Counter
 
 from mmrag.indexing.vectorstore import index_documents
 from mmrag.ingestion.pipeline import ingest_directory
+from mmrag.retrieval.bm25 import save_chunks
 
 
 def main() -> None:
@@ -16,6 +17,9 @@ def main() -> None:
 
     index_documents(docs)
     print("Indexed in Pinecone.")
+
+    save_chunks(docs)
+    print("Saved chunks for BM25 keyword search.")
 
 
 if __name__ == "__main__":

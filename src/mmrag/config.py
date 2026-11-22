@@ -46,12 +46,17 @@ class Settings(BaseSettings):
     pinecone_metric: str = "cosine"
 
     # --- Retrieval ---
-    top_k: int = 3
+    top_k: int = 3  # chunks passed to the LLM
+    retrieval_candidates: int = 20  # chunks fetched per search before fusion/reranking
+    hybrid_search: bool = True  # combine dense (Pinecone) and keyword (BM25) results
+    rerank: bool = True  # reorder candidates with a cross-encoder
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
     # --- Paths ---
     raw_data_dir: Path = PROJECT_ROOT / "data" / "raw"
     extracted_assets_dir: Path = PROJECT_ROOT / "data" / "extracted_assets"
     ground_truth_dir: Path = PROJECT_ROOT / "data" / "ground_truth"
+    index_dir: Path = PROJECT_ROOT / "data" / "indexes"  # local BM25 chunk store
 
 
 @lru_cache

@@ -147,6 +147,9 @@ def main() -> None:
         "config": {
             "k": k,
             "retrieval_only": args.retrieval_only,
+            "hybrid_search": settings.hybrid_search,
+            "rerank": settings.rerank,
+            "retrieval_candidates": settings.retrieval_candidates,
             "text_model": settings.text_model,
             "vision_model": settings.vision_model,
             "embedding_model": settings.embedding_model,
