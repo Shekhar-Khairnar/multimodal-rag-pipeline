@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     # --- Embeddings (run locally, no API calls) ---
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_dim: int = 384  # must match the embedding model's output size
+    embedding_query_prefix: str = ""  # some models (e.g. BGE) expect an instruction before queries
 
     # --- Pinecone vector store ---
     pinecone_index_name: str = "multimodal-rag"
@@ -51,7 +52,9 @@ class Settings(BaseSettings):
     retrieval_candidates: int = 20  # chunks fetched per search before fusion/reranking
     hybrid_search: bool = True  # combine dense (Pinecone) and keyword (BM25) results
     rerank: bool = True  # reorder candidates with a cross-encoder
-    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    # Chosen by a retrieval bake-off; ranks tables much better than ms-marco-MiniLM-L-6-v2.
+    reranker_model: str = "mixedbread-ai/mxbai-rerank-base-v1"
+    expand_tables: bool = True  # send the whole table when any of its row groups is retrieved
 
     # --- Query rewriting (one LLM call before retrieval) ---
     query_rewrite: bool = True  # resolve follow-ups and split multi-part questions

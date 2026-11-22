@@ -13,9 +13,13 @@ from mmrag.config import get_settings
 @lru_cache
 def get_embeddings() -> HuggingFaceEmbeddings:
     """Load the sentence-transformers model once. It runs locally, with no API calls."""
+    settings = get_settings()
+    encode = {"normalize_embeddings": True}  # unit-length vectors suit cosine similarity
     return HuggingFaceEmbeddings(
-        model_name=get_settings().embedding_model,
-        encode_kwargs={"normalize_embeddings": True},  # unit-length vectors suit cosine similarity
+        model_name=settings.embedding_model,
+        encode_kwargs=encode,
+        # Prefix added to search queries only, never to the indexed documents.
+        query_encode_kwargs={**encode, "prompt": settings.embedding_query_prefix},
     )
 
 

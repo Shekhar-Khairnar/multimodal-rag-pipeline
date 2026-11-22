@@ -8,6 +8,7 @@ call per (question, chunk) pair, so it is only applied to a short candidate list
 
 from functools import lru_cache
 
+import torch
 from langchain_core.documents import Document
 from sentence_transformers import CrossEncoder
 
@@ -16,7 +17,10 @@ from mmrag.config import get_settings
 
 @lru_cache
 def get_reranker() -> CrossEncoder:
-    return CrossEncoder(get_settings().reranker_model)
+    """Load the cross-encoder once (on the GPU if available)."""
+    # Some models are stored in float16, which is very slow on CPU; use float32 there.
+    kwargs = {} if torch.cuda.is_available() else {"model_kwargs": {"dtype": torch.float32}}
+    return CrossEncoder(get_settings().reranker_model, **kwargs)
 
 
 def rerank(question: str, docs: list[Document], k: int) -> list[Document]:

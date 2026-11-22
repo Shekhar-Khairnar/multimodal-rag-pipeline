@@ -1,0 +1,66 @@
+{
+  "label": "emb-bge-small-k20",
+  "timestamp": "2026-11-22T00:00:06",
+  "config": {
+    "k": 20,
+    "retrieval_only": true,
+    "hybrid_search": false,
+    "rerank": false,
+    "retrieval_candidates": 20,
+    "query_rewrite": false,
+    "expand_tables": false,
+    "text_model": "thinkingmachines/inkling-2-mini",
+    "vision_model": "thinkingmachines/inkling-2-mini",
+    "embedding_model": "BAAI/bge-small-en-v1.5"
+  },
+  "overall": {
+    "n": 41,
+    "recall": 0.987,
+    "mrr": 0.806,
+    "latency_p50": 0.057
+  },
+  "by_category": {
+    "chart": {
+      "n": 8,
+      "recall": 1.0,
+      "mrr": 0.78,
+      "latency_p50": 0.058
+    },
+    "cross_document": {
+      "n": 5,
+      "recall": 0.9,
+      "mrr": 0.617,
+      "latency_p50": 0.057
+    },
+    "diagram": {
+      "n": 5,
+      "recall": 1.0,
+      "mrr": 0.8,
+      "latency_p50": 0.059
+    },
+    "follow_up": {
+      "n": 3,
+      "recall": 1.0,
+      "mrr": 0.708,
+      "latency_p50": 0.054
+    },
+    "table": {
+      "n": 10,
+      "recall": 1.0,
+      "mrr": 0.933,
+      "latency_p50": 0.056
+    },
+    "text": {
+      "n": 7,
+      "recall": 1.0,
+      "mrr": 0.833,
+      "latency_p50": 0.056
+    },
+    "unanswerable": {
+      "n": 3,
+      "recall": null,
+      "mrr": null,
+      "latency_p50": 0.055
+    }
+  }
+}

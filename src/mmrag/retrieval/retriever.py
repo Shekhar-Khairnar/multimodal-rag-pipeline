@@ -5,7 +5,8 @@ Pipeline (each stage can be switched off in settings for comparison):
   2. hybrid search     + top-N chunks by keyword match (BM25), merged with Reciprocal Rank Fusion
   3. reranking         a cross-encoder reorders the merged candidates; the best k are kept
 
-retrieve_many() runs this pipeline once per search query (see query_rewriter.py).
+retrieve_many() runs this pipeline once per search query (see query_rewriter.py),
+merges the results and expands table row groups into whole tables.
 """
 
 from langchain_core.documents import Document
@@ -66,10 +67,31 @@ def retrieve(question: str, k: int | None = None) -> list[Document]:
     return candidates[:k]
 
 
+def expand_tables(docs: list[Document]) -> list[Document]:
+    """Replace each retrieved table row group with its whole table (small-to-big retrieval).
+
+    Small chunks give precise search, but a question about a table often needs
+    rows from other groups (a ranking, a total, a comparison). Each table is
+    included once; later row groups of an already included table are dropped.
+    """
+    seen_tables: set[str] = set()
+    expanded = []
+    for doc in docs:
+        table_id = doc.metadata.get("parent_id")
+        if table_id is None:  # text or visual chunk
+            expanded.append(doc)
+        elif table_id not in seen_tables:
+            seen_tables.add(table_id)
+            doc.page_content = doc.metadata["parent_content"]
+            expanded.append(doc)
+    return expanded
+
+
 def retrieve_many(queries: list[str], k: int | None = None) -> list[Document]:
     """Retrieve k chunks for each query and merge them in query order, without duplicates.
 
     Each query keeps its own top-k, so one fact's chunks cannot crowd out another's.
+    Table row groups are then expanded to whole tables if enabled in settings.
     """
     seen: set[str] = set()
     merged = []
@@ -78,7 +100,7 @@ def retrieve_many(queries: list[str], k: int | None = None) -> list[Document]:
             if doc.metadata["chunk_id"] not in seen:
                 seen.add(doc.metadata["chunk_id"])
                 merged.append(doc)
-    return merged
+    return expand_tables(merged) if get_settings().expand_tables else merged
 
 
 def format_context(docs: list[Document]) -> str:

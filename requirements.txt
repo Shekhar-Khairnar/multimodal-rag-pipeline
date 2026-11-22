@@ -10,6 +10,11 @@ langchain-pinecone
 pinecone
 sentence-transformers
 
+# PyTorch with CUDA 12.6 (GPU) for local embedding and reranking models.
+# PyPI only ships CPU builds on Windows, so the CUDA build comes from PyTorch's index.
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.14.1
+
 # Lexical search for hybrid retrieval (local BM25 + RRF)
 rank_bm25
 

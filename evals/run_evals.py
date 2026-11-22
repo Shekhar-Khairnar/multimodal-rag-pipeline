@@ -157,6 +157,7 @@ def main() -> None:
             "rerank": settings.rerank,
             "retrieval_candidates": settings.retrieval_candidates,
             "query_rewrite": settings.query_rewrite,
+            "expand_tables": settings.expand_tables,
             "text_model": settings.text_model,
             "vision_model": settings.vision_model,
             "embedding_model": settings.embedding_model,

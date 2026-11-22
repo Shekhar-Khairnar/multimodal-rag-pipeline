@@ -2,7 +2,9 @@
 
 Each page produces:
   * text Documents  - the page's paragraphs, split into ~700-character chunks (modality="text")
-  * table Documents - each table, split into small row groups as Markdown (modality="table")
+  * table Documents - each table, split into small row groups as Markdown (modality="table").
+                      Each row group also carries the whole table in metadata["parent_content"],
+                      so retrieval can search small chunks but answer from the full table.
 
 Every chunk starts with a line naming its source document and page, so a chunk
 such as "Gross Profit | $508.4" stays tied to the right document when it is
@@ -106,7 +108,11 @@ def parse_page(page: pymupdf.Page, meta: dict, exclude: list | None = None) -> l
         if not table.header.external:
             rows = rows[1:]  # the header is also the first row of the table
 
-        # Split into row groups, repeating the header in each.
+        # The whole table, sent to the LLM in place of a matched row group (small-to-big retrieval).
+        table_id = f"{meta['doc_id']}::p{page_no}::t{table_no}"
+        full_table = f'Table from "{meta["doc_title"]}", page {page_no} (all {len(rows)} rows):\n' + _markdown(header, rows)
+
+        # Split into small row groups for search, repeating the header in each.
         for start in range(0, len(rows), ROWS_PER_CHUNK):
             chunk_rows = rows[start : start + ROWS_PER_CHUNK]
             end = start + len(chunk_rows)
@@ -118,7 +124,9 @@ def parse_page(page: pymupdf.Page, meta: dict, exclude: list | None = None) -> l
                     **meta,
                     "page": page_no,
                     "modality": "table",
-                    "chunk_id": f"{meta['doc_id']}::p{page_no}::t{table_no}::r{start + 1}",
+                    "chunk_id": f"{table_id}::r{start + 1}",
+                    "parent_id": table_id,
+                    "parent_content": full_table,
                 },
             ))
 
