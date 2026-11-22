@@ -1,0 +1,81 @@
+{
+  "label": "e2e-rewrite",
+  "timestamp": "2026-11-21T22:52:48",
+  "config": {
+    "k": 3,
+    "retrieval_only": false,
+    "hybrid_search": true,
+    "rerank": true,
+    "retrieval_candidates": 20,
+    "query_rewrite": true,
+    "text_model": "thinkingmachines/inkling-2-mini",
+    "vision_model": "thinkingmachines/inkling-2-mini",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+  },
+  "overall": {
+    "n": 40,
+    "recall": 0.959,
+    "mrr": 0.851,
+    "latency_p50": 7.155,
+    "accuracy": 0.95,
+    "tokens": 73786
+  },
+  "by_category": {
+    "chart": {
+      "n": 8,
+      "recall": 1.0,
+      "mrr": 0.833,
+      "latency_p50": 7.22,
+      "accuracy": 1.0,
+      "tokens": 18071
+    },
+    "cross_document": {
+      "n": 5,
+      "recall": 0.9,
+      "mrr": 0.767,
+      "latency_p50": 25.83,
+      "accuracy": 0.8,
+      "tokens": 13434
+    },
+    "diagram": {
+      "n": 5,
+      "recall": 1.0,
+      "mrr": 0.8,
+      "latency_p50": 7.17,
+      "accuracy": 1.0,
+      "tokens": 10104
+    },
+    "follow_up": {
+      "n": 3,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "latency_p50": 3.41,
+      "accuracy": 1.0,
+      "tokens": 5600
+    },
+    "table": {
+      "n": 9,
+      "recall": 0.889,
+      "mrr": 0.833,
+      "latency_p50": 9.98,
+      "accuracy": 0.889,
+      "tokens": 10837
+    },
+    "text": {
+      "n": 7,
+      "recall": 1.0,
+      "mrr": 0.929,
+      "latency_p50": 5.74,
+      "accuracy": 1.0,
+      "tokens": 10603
+    },
+    "unanswerable": {
+      "n": 3,
+      "recall": null,
+      "mrr": null,
+      "latency_p50": 4.6,
+      "accuracy": 1.0,
+      "tokens": 5137
+    }
+  }
+}

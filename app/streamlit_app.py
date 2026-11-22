@@ -41,10 +41,14 @@ def render_details(response: RAGResponse) -> None:
     ]
     st.markdown(" ".join(badges))
 
+    # Show the rewrite only when it changed something (follow-up resolved or question split).
+    if response.search_queries != [response.question]:
+        queries = " · ".join(f"“{q}”" for q in response.search_queries)
+        st.caption(f":material/manage_search: Searched for: {queries}")
+
     with st.expander(f"Sources ({len(response.sources)})", icon=":material/description:"):
-        st.caption(
-            f"Retrieval {response.timings['retrieval']}s · Generation {response.timings['generation']}s"
-        )
+        t = response.timings
+        st.caption(f"Rewrite {t['rewrite']}s · Retrieval {t['retrieval']}s · Generation {t['generation']}s")
         for s in response.sources:
             with st.container(border=True):
                 st.markdown(
@@ -58,6 +62,7 @@ def render_details(response: RAGResponse) -> None:
 
 def answer(question: str, top_k: int) -> None:
     """Run the pipeline for one question and add both messages to the history."""
+    history = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
     st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):
         st.markdown(question)
@@ -65,7 +70,7 @@ def answer(question: str, top_k: int) -> None:
     with st.chat_message("assistant"):
         try:
             with st.spinner("Retrieving and generating..."):
-                response = ask_rag(question, k=top_k)
+                response = ask_rag(question, history=history, k=top_k)
         except Exception as exc:  # show API/network errors in the chat instead of crashing the app
             st.error(f"Something went wrong: {exc}")
             return

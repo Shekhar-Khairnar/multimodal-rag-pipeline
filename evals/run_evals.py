@@ -3,7 +3,7 @@
 Usage:
     python evals/run_evals.py --label baseline
     python evals/run_evals.py --label k5 --k 5
-    python evals/run_evals.py --label r20 --k 20 --retrieval-only   # no LLM calls, seconds to run
+    python evals/run_evals.py --label r20 --k 20 --retrieval-only   # skips answer generation and judging
 
 Metrics
   recall    share of a question's evidence strings that appear in the retrieved chunks.
@@ -30,7 +30,8 @@ from langchain_core.messages import HumanMessage
 from mmrag.config import PROJECT_ROOT, get_settings
 from mmrag.generation.rag import ask_rag
 from mmrag.llm import text_llm
-from mmrag.retrieval.retriever import retrieve
+from mmrag.retrieval.query_rewriter import plan_queries
+from mmrag.retrieval.retriever import retrieve_many
 
 QA_PATH = PROJECT_ROOT / "data" / "ground_truth" / "qa.jsonl"
 RESULTS_DIR = PROJECT_ROOT / "evals" / "results"
@@ -71,22 +72,27 @@ def is_correct(item: dict, answer: str) -> bool:
 
 def run_question(item: dict, k: int, retrieval_only: bool) -> dict:
     row = {"qid": item["qid"], "category": item["category"], "question": item["question"]}
+    history = item.get("history", [])  # earlier turns, for follow-up questions
 
     if retrieval_only:
         start = time.perf_counter()
-        docs = retrieve(item["question"], k)
+        plan, _ = plan_queries(item["question"], history)
+        docs = retrieve_many(plan.search_queries, k)
         row["latency"] = round(time.perf_counter() - start, 3)
         chunks = [d.page_content for d in docs]
+        row["search_queries"] = plan.search_queries
         row["retrieved"] = [d.metadata["chunk_id"] for d in docs]
     else:
-        response = ask_rag(item["question"], k=k)
+        response = ask_rag(item["question"], history=history, k=k)
         chunks = [s.content for s in response.sources]
         row.update({
+            "search_queries": response.search_queries,
             "reference": item["answer"],
             "answer": response.answer,
             "correct": is_correct(item, response.answer),
             "route": response.route,
             "latency": response.timings["total"],
+            "timings": response.timings,  # per stage, to see where latency goes
             "tokens": response.usage.get("total_tokens", 0),
             "retrieved": [s.chunk_id for s in response.sources],
         })
@@ -122,7 +128,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--label", default="run", help="name for this run, e.g. baseline")
     parser.add_argument("--k", type=int, default=None, help="chunks to retrieve (default: settings.top_k)")
-    parser.add_argument("--retrieval-only", action="store_true", help="score retrieval only, no LLM calls")
+    parser.add_argument("--retrieval-only", action="store_true", help="score retrieval only, no answers")
     args = parser.parse_args()
 
     settings = get_settings()
@@ -150,6 +156,7 @@ def main() -> None:
             "hybrid_search": settings.hybrid_search,
             "rerank": settings.rerank,
             "retrieval_candidates": settings.retrieval_candidates,
+            "query_rewrite": settings.query_rewrite,
             "text_model": settings.text_model,
             "vision_model": settings.vision_model,
             "embedding_model": settings.embedding_model,

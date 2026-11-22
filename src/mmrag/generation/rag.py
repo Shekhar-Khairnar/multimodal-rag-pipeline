@@ -15,7 +15,8 @@ from mmrag.config import PROJECT_ROOT, get_settings
 from mmrag.generation.prompts import SYSTEM_PROMPT, USER_PROMPT
 from mmrag.ingestion.image_utils import image_to_data_uri
 from mmrag.llm import text_llm, vision_llm
-from mmrag.retrieval.retriever import format_context, retrieve
+from mmrag.retrieval.query_rewriter import plan_queries
+from mmrag.retrieval.retriever import format_context, retrieve_many
 from mmrag.schemas import RAGResponse, Source
 
 
@@ -50,31 +51,48 @@ def to_source(number: int, doc: Document) -> Source:
     )
 
 
-def ask_rag(question: str, k: int | None = None) -> RAGResponse:
-    """Retrieve context for the question, pick a route, and generate a cited answer."""
-    settings = get_settings()
-    start = time.perf_counter()
+def add_usage(*usages: dict) -> dict:
+    """Sum token counts from several LLM calls."""
+    keys = ("input_tokens", "output_tokens", "total_tokens")
+    return {key: sum(u.get(key, 0) for u in usages) for key in keys}
 
-    docs = retrieve(question, k)
-    retrieval_seconds = time.perf_counter() - start
+
+def ask_rag(question: str, history: list[dict] | None = None, k: int | None = None) -> RAGResponse:
+    """Answer a question, using earlier chat messages to resolve follow-ups.
+
+    Steps: rewrite into search queries -> retrieve for each -> pick a route -> generate.
+    history: earlier messages as {"role": "user" | "assistant", "content": str}.
+    """
+    settings = get_settings()
+    times = [time.perf_counter()]
+
+    plan, rewrite_usage = plan_queries(question, history)
+    times.append(time.perf_counter())
+
+    docs = retrieve_many(plan.search_queries, k)
+    times.append(time.perf_counter())
 
     route = choose_route(docs)
     llm, model = (vision_llm(), settings.vision_model) if route == "visual" else (text_llm(), settings.text_model)
-    reply = llm.invoke([SystemMessage(SYSTEM_PROMPT), build_message(question, docs)])
-    total_seconds = time.perf_counter() - start
+    # The standalone question is answered, so the chat history is not needed here.
+    reply = llm.invoke([SystemMessage(SYSTEM_PROMPT), build_message(plan.question, docs)])
+    times.append(time.perf_counter())
 
     return RAGResponse(
         question=question,
+        rewritten_question=plan.question,
+        search_queries=plan.search_queries,
         answer=reply.content.strip(),
         route=route,
         model=model,
         sources=[to_source(i, d) for i, d in enumerate(docs, start=1)],
         timings={
-            "retrieval": round(retrieval_seconds, 2),
-            "generation": round(total_seconds - retrieval_seconds, 2),
-            "total": round(total_seconds, 2),
+            "rewrite": round(times[1] - times[0], 2),
+            "retrieval": round(times[2] - times[1], 2),
+            "generation": round(times[3] - times[2], 2),
+            "total": round(times[3] - times[0], 2),
         },
-        usage=reply.usage_metadata or {},
+        usage=add_usage(rewrite_usage, reply.usage_metadata or {}),
     )
 
 
@@ -83,6 +101,7 @@ if __name__ == "__main__":
 
     response = ask_rag(" ".join(sys.argv[1:]) or "Which campus region has the highest PUE?")
     print(response.answer)
-    print(f"\nroute={response.route}  model={response.model}  timings={response.timings}")
+    print(f"\nsearch queries={response.search_queries}")
+    print(f"route={response.route}  model={response.model}  timings={response.timings}")
     for s in response.sources:
         print(f"  [{s.number}] {s.score:.3f}  {s.modality:6}  p{s.page}  {s.source}")

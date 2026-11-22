@@ -1,0 +1,65 @@
+{
+  "label": "no-rewrite",
+  "timestamp": "2026-11-21T22:09:05",
+  "config": {
+    "k": 3,
+    "retrieval_only": true,
+    "hybrid_search": true,
+    "rerank": true,
+    "retrieval_candidates": 20,
+    "query_rewrite": false,
+    "text_model": "thinkingmachines/inkling-2-mini",
+    "vision_model": "thinkingmachines/inkling-2-mini",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+  },
+  "overall": {
+    "n": 40,
+    "recall": 0.932,
+    "mrr": 0.851,
+    "latency_p50": 0.361
+  },
+  "by_category": {
+    "chart": {
+      "n": 8,
+      "recall": 1.0,
+      "mrr": 0.833,
+      "latency_p50": 0.409
+    },
+    "cross_document": {
+      "n": 5,
+      "recall": 0.7,
+      "mrr": 0.9,
+      "latency_p50": 0.336
+    },
+    "diagram": {
+      "n": 5,
+      "recall": 1.0,
+      "mrr": 0.8,
+      "latency_p50": 0.386
+    },
+    "follow_up": {
+      "n": 3,
+      "recall": 1.0,
+      "mrr": 0.778,
+      "latency_p50": 0.374
+    },
+    "table": {
+      "n": 9,
+      "recall": 0.889,
+      "mrr": 0.833,
+      "latency_p50": 0.324
+    },
+    "text": {
+      "n": 7,
+      "recall": 1.0,
+      "mrr": 0.929,
+      "latency_p50": 0.39
+    },
+    "unanswerable": {
+      "n": 3,
+      "recall": null,
+      "mrr": null,
+      "latency_p50": 0.301
+    }
+  }
+}

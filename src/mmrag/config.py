@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.0  # deterministic answers for a factual RAG system
     llm_reasoning_effort: str = "low"  # "low" | "medium" | "high"; higher is slower
     llm_timeout: int = 120  # seconds per request before it is retried
+    llm_hedge_after: float = 3.0  # seconds before a slow call gets a backup request
 
     # --- Embeddings (run locally, no API calls) ---
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
@@ -51,6 +52,12 @@ class Settings(BaseSettings):
     hybrid_search: bool = True  # combine dense (Pinecone) and keyword (BM25) results
     rerank: bool = True  # reorder candidates with a cross-encoder
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+    # --- Query rewriting (one LLM call before retrieval) ---
+    query_rewrite: bool = True  # resolve follow-ups and split multi-part questions
+    max_search_queries: int = 3  # upper limit on queries per question
+    history_turns: int = 3  # previous question/answer pairs shown to the rewriter
+    rewrite_timeout: int = 10  # seconds; on timeout, search with the original question
 
     # --- Paths ---
     raw_data_dir: Path = PROJECT_ROOT / "data" / "raw"

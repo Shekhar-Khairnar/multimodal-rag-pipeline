@@ -4,6 +4,8 @@ Pipeline (each stage can be switched off in settings for comparison):
   1. dense search      top-N chunks by embedding similarity (Pinecone)
   2. hybrid search     + top-N chunks by keyword match (BM25), merged with Reciprocal Rank Fusion
   3. reranking         a cross-encoder reorders the merged candidates; the best k are kept
+
+retrieve_many() runs this pipeline once per search query (see query_rewriter.py).
 """
 
 from langchain_core.documents import Document
@@ -62,6 +64,21 @@ def retrieve(question: str, k: int | None = None) -> list[Document]:
     if settings.rerank:
         return rerank(question, candidates, k)
     return candidates[:k]
+
+
+def retrieve_many(queries: list[str], k: int | None = None) -> list[Document]:
+    """Retrieve k chunks for each query and merge them in query order, without duplicates.
+
+    Each query keeps its own top-k, so one fact's chunks cannot crowd out another's.
+    """
+    seen: set[str] = set()
+    merged = []
+    for query in queries:
+        for doc in retrieve(query, k):
+            if doc.metadata["chunk_id"] not in seen:
+                seen.add(doc.metadata["chunk_id"])
+                merged.append(doc)
+    return merged
 
 
 def format_context(docs: list[Document]) -> str:
