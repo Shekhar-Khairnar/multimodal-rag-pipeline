@@ -1,0 +1,68 @@
+{
+  "label": "k5",
+  "timestamp": "2026-11-21T20:05:09",
+  "config": {
+    "k": 5,
+    "text_model": "thinkingmachines/inkling-2-mini",
+    "vision_model": "thinkingmachines/inkling-2-mini",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+  },
+  "overall": {
+    "n": 37,
+    "accuracy": 0.784,
+    "evidence_recall": 0.971,
+    "latency_p50": 1.53,
+    "latency_p95": 15.21,
+    "tokens": 62955
+  },
+  "by_category": {
+    "chart": {
+      "n": 8,
+      "accuracy": 0.875,
+      "evidence_recall": 1.0,
+      "latency_p50": 1.53,
+      "latency_p95": 32.86,
+      "tokens": 17627
+    },
+    "cross_document": {
+      "n": 5,
+      "accuracy": 0.0,
+      "evidence_recall": 0.8,
+      "latency_p50": 1.9,
+      "latency_p95": 7.35,
+      "tokens": 9052
+    },
+    "diagram": {
+      "n": 5,
+      "accuracy": 1.0,
+      "evidence_recall": 1.0,
+      "latency_p50": 1.87,
+      "latency_p95": 2.51,
+      "tokens": 8903
+    },
+    "table": {
+      "n": 9,
+      "accuracy": 0.889,
+      "evidence_recall": 1.0,
+      "latency_p50": 1.42,
+      "latency_p95": 1.98,
+      "tokens": 12083
+    },
+    "text": {
+      "n": 7,
+      "accuracy": 0.857,
+      "evidence_recall": 1.0,
+      "latency_p50": 1.36,
+      "latency_p95": 15.21,
+      "tokens": 10468
+    },
+    "unanswerable": {
+      "n": 3,
+      "accuracy": 1.0,
+      "evidence_recall": null,
+      "latency_p50": 1.18,
+      "latency_p95": 1.85,
+      "tokens": 4822
+    }
+  }
+}
